@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { getPublicUrl } from "../utils/publicUrl";
 
 export default function Cart() {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
@@ -24,17 +25,17 @@ export default function Cart() {
       <div className="cart-layout">
         <div className="cart-items">
           {cart.map((item) => (
-            <div key={`${item.id}-${item.size}`} className="cart-item">
-              <img src={item.image} alt={item.name} />
+            <div key={`${item.id}-${item.size}-${item.color ?? ""}`} className="cart-item">
+              <img src={getPublicUrl(item.image)} alt={item.name} />
               <div className="cart-item-info">
                 <h3>{item.name}</h3>
-                <p>Taglia: {item.size}</p>
+                <p>Taglia: {item.size}{item.color ? ` · Colore: ${item.color}` : ""}</p>
                 <p className="cart-item-price">€ {item.price.toFixed(2)}</p>
               </div>
               <div className="cart-item-qty">
                 <button
                   onClick={() =>
-                    updateQuantity(item.id, item.size, item.quantity - 1)
+                    updateQuantity(item.id, item.size, item.color, item.quantity - 1)
                   }
                 >
                   −
@@ -42,7 +43,7 @@ export default function Cart() {
                 <span>{item.quantity}</span>
                 <button
                   onClick={() =>
-                    updateQuantity(item.id, item.size, item.quantity + 1)
+                    updateQuantity(item.id, item.size, item.color, item.quantity + 1)
                   }
                 >
                   +
@@ -53,7 +54,7 @@ export default function Cart() {
               </p>
               <button
                 className="cart-remove"
-                onClick={() => removeFromCart(item.id, item.size)}
+                onClick={() => removeFromCart(item.id, item.size, item.color)}
                 aria-label="Rimuovi"
               >
                 ×

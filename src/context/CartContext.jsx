@@ -2,15 +2,16 @@ import { createContext, useContext, useReducer } from "react";
 
 const CartContext = createContext(null);
 
+const sameItem = (a, b) =>
+  a.id === b.id && a.size === b.size && (a.color || "") === (b.color || "");
+
 const cartReducer = (state, action) => {
   switch (action.type) {
     case "ADD": {
-      const existing = state.find(
-        (item) => item.id === action.payload.id && item.size === action.payload.size
-      );
+      const existing = state.find((item) => sameItem(item, action.payload));
       if (existing) {
         return state.map((item) =>
-          item.id === action.payload.id && item.size === action.payload.size
+          sameItem(item, action.payload)
             ? { ...item, quantity: item.quantity + (action.payload.quantity || 1) }
             : item
         );
@@ -18,18 +19,13 @@ const cartReducer = (state, action) => {
       return [...state, { ...action.payload, quantity: action.payload.quantity || 1 }];
     }
     case "REMOVE":
-      return state.filter(
-        (item) => !(item.id === action.payload.id && item.size === action.payload.size)
-      );
+      return state.filter((item) => !sameItem(item, action.payload));
     case "UPDATE_QUANTITY": {
       if (action.payload.quantity <= 0) {
-        return state.filter(
-          (item) =>
-            !(item.id === action.payload.id && item.size === action.payload.size)
-        );
+        return state.filter((item) => !sameItem(item, action.payload));
       }
       return state.map((item) =>
-        item.id === action.payload.id && item.size === action.payload.size
+        sameItem(item, action.payload)
           ? { ...item, quantity: action.payload.quantity }
           : item
       );
@@ -44,19 +40,19 @@ const cartReducer = (state, action) => {
 export function CartProvider({ children }) {
   const [cart, dispatch] = useReducer(cartReducer, []);
 
-  const addToCart = (product, size, quantity = 1) => {
+  const addToCart = (product, size, color, quantity = 1) => {
     dispatch({
       type: "ADD",
-      payload: { ...product, size, quantity },
+      payload: { ...product, size, color: color || null, quantity },
     });
   };
 
-  const removeFromCart = (id, size) => {
-    dispatch({ type: "REMOVE", payload: { id, size } });
+  const removeFromCart = (id, size, color) => {
+    dispatch({ type: "REMOVE", payload: { id, size, color: color ?? "" } });
   };
 
-  const updateQuantity = (id, size, quantity) => {
-    dispatch({ type: "UPDATE_QUANTITY", payload: { id, size, quantity } });
+  const updateQuantity = (id, size, color, quantity) => {
+    dispatch({ type: "UPDATE_QUANTITY", payload: { id, size, color: color ?? "", quantity } });
   };
 
   const clearCart = () => dispatch({ type: "CLEAR" });

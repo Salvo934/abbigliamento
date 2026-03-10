@@ -52,6 +52,58 @@ export default function Header() {
         <Link to="/" className="logo" onClick={closeMenu}>
           Flowvix
         </Link>
+        <nav
+          id="main-nav"
+          className={`nav ${menuOpen ? "nav-open" : ""}`}
+          aria-label="Menu principale"
+        >
+          <div className="nav-drawer-header">
+            <span className="nav-drawer-title">Menu</span>
+            <button
+              type="button"
+              className="nav-close"
+              onClick={closeMenu}
+              aria-label="Chiudi menu"
+            >
+              <span aria-hidden>×</span>
+            </button>
+          </div>
+          <ul className="nav-list">
+            <li>
+              <Link to="/" onClick={closeMenu} className="nav-link">
+                <span className="nav-link-icon" aria-hidden>🏠</span>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/shop" onClick={closeMenu} className="nav-link">
+                <span className="nav-link-icon" aria-hidden>🛍️</span>
+                Shop
+              </Link>
+            </li>
+            <li>
+              <Link to="/contatti" onClick={closeMenu} className="nav-link">
+                <span className="nav-link-icon" aria-hidden>✉️</span>
+                Contatti
+              </Link>
+            </li>
+          <li className="nav-item-accedi">
+            <Link to="/login" onClick={closeMenu} className="nav-link">
+              <span className="nav-link-icon" aria-hidden>👤</span>
+              Accedi
+            </Link>
+          </li>
+          <li className="nav-item-cart">
+              <Link to="/carrello" onClick={closeMenu} className="nav-link cart-link">
+                <span className="nav-link-icon" aria-hidden>🛒</span>
+                Carrello
+                {cartCount > 0 && (
+                  <span className="cart-badge" aria-label={`${cartCount} articoli`}>{cartCount}</span>
+                )}
+              </Link>
+            </li>
+          </ul>
+        </nav>
         <div className="header-actions">
           <Link to="/login" className="header-accedi" aria-label="Accedi">
             <svg className="header-accedi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -82,58 +134,6 @@ export default function Header() {
         tabIndex={-1}
         aria-label="Chiudi menu"
       />
-      <nav
-        id="main-nav"
-        className={`nav ${menuOpen ? "nav-open" : ""}`}
-        aria-label="Menu principale"
-      >
-        <div className="nav-drawer-header">
-          <span className="nav-drawer-title">Menu</span>
-          <button
-            type="button"
-            className="nav-close"
-            onClick={closeMenu}
-            aria-label="Chiudi menu"
-          >
-            <span aria-hidden>×</span>
-          </button>
-        </div>
-        <ul className="nav-list">
-          <li>
-            <Link to="/" onClick={closeMenu} className="nav-link">
-              <span className="nav-link-icon" aria-hidden>🏠</span>
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link to="/shop" onClick={closeMenu} className="nav-link">
-              <span className="nav-link-icon" aria-hidden>🛍️</span>
-              Shop
-            </Link>
-          </li>
-          <li>
-            <Link to="/contatti" onClick={closeMenu} className="nav-link">
-              <span className="nav-link-icon" aria-hidden>✉️</span>
-              Contatti
-            </Link>
-          </li>
-          <li>
-            <Link to="/login" onClick={closeMenu} className="nav-link">
-              <span className="nav-link-icon" aria-hidden>👤</span>
-              Accedi
-            </Link>
-          </li>
-          <li className="nav-item-cart">
-            <Link to="/carrello" onClick={closeMenu} className="nav-link cart-link">
-              <span className="nav-link-icon" aria-hidden>🛒</span>
-              Carrello
-              {cartCount > 0 && (
-                <span className="cart-badge" aria-label={`${cartCount} articoli`}>{cartCount}</span>
-              )}
-            </Link>
-          </li>
-        </ul>
-      </nav>
     </header>
   );
 }

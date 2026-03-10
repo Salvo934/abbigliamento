@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { getPublicUrl } from "../utils/publicUrl";
 import AddToCartModal from "./AddToCartModal";
 
 export default function ProductCard({ product }) {
@@ -10,7 +11,7 @@ export default function ProductCard({ product }) {
       <article className="product-card">
         <Link to={`/shop/${product.id}`} className="product-card-link">
           <div className="product-card-image">
-            <img src={product.image} alt={product.name} />
+            <img src={getPublicUrl(product.image)} alt={product.name} />
           </div>
           <div className="product-card-body">
             <span className="product-category">{product.category}</span>

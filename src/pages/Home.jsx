@@ -4,8 +4,8 @@ import { products } from "../data/products";
 import ProductCard from "../components/ProductCard";
 
 const PARTICLE_COUNT = 48;
-const LINE_1 = "Eleganza che";
-const LINE_2 = "non passa di moda";
+const LINE_1 = "Find";
+const LINE_2 = "your Flow";
 const TYPE_SPEED = 90;
 const PAUSE_BETWEEN_LINES = 400;
 
@@ -98,7 +98,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="hero-desc">
-            Pezzi iconici in tessuti selezionati. Per un guardaroba che dura nel tempo.
+          Comfort e stile pensati per il tuo ritmo quotidiano.
           </p>
           <div className="hero-actions">
             <Link to="/shop" className="btn btn-primary">

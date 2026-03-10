@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { getPublicUrl } from "../utils/publicUrl";
 
 export default function CartDrawer({ isOpen, onClose }) {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
@@ -37,18 +38,18 @@ export default function CartDrawer({ isOpen, onClose }) {
             <>
               <ul className="cart-drawer-list">
                 {cart.map((item) => (
-                  <li key={`${item.id}-${item.size}`} className="cart-drawer-item">
-                    <img src={item.image} alt="" />
+                  <li key={`${item.id}-${item.size}-${item.color ?? ""}`} className="cart-drawer-item">
+                    <img src={getPublicUrl(item.image)} alt="" />
                     <div className="cart-drawer-item-info">
                       <span className="cart-drawer-item-name">{item.name}</span>
                       <span className="cart-drawer-item-meta">
-                        {item.size} × {item.quantity} — €{(item.price * item.quantity).toFixed(2)}
+                        {item.size}{item.color ? ` · ${item.color}` : ""} × {item.quantity} — €{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                     <div className="cart-drawer-item-actions">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.color, item.quantity - 1)}
                         aria-label="Diminuisci"
                       >
                         −
@@ -56,7 +57,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       <span>{item.quantity}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.color, item.quantity + 1)}
                         aria-label="Aumenta"
                       >
                         +
@@ -64,7 +65,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       <button
                         type="button"
                         className="cart-drawer-remove"
-                        onClick={() => removeFromCart(item.id, item.size)}
+                        onClick={() => removeFromCart(item.id, item.size, item.color)}
                         aria-label="Rimuovi"
                       >
                         ×

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductById } from "../data/products";
+import { getPublicUrl } from "../utils/publicUrl";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 
@@ -10,7 +11,10 @@ export default function ProductDetail() {
   const product = getProductById(id);
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const sizes = product?.sizes ?? [];
+  const colors = product?.colors ?? ["Bianco", "Nero"];
   const [size, setSize] = useState("");
+  const [color, setColor] = useState(colors[0]);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -28,7 +32,7 @@ export default function ProductDetail() {
       showToast("Seleziona una taglia");
       return;
     }
-    addToCart(product, size, quantity);
+    addToCart(product, size, color, quantity);
     showToast("Aggiunto al carrello");
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -38,7 +42,7 @@ export default function ProductDetail() {
     <div className="page product-detail-page">
       <div className="product-detail">
         <div className="product-detail-image">
-          <img src={product.image} alt={product.name} />
+          <img src={getPublicUrl(product.image)} alt={product.name} />
         </div>
         <div className="product-detail-info">
           <span className="product-category">{product.category}</span>
@@ -47,9 +51,24 @@ export default function ProductDetail() {
           <p className="product-description">{product.description}</p>
 
           <div className="form-group">
+            <label>Colore</label>
+            <div className="color-options">
+              {colors.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`color-btn color-btn--${c.toLowerCase()} ${color === c ? "active" : ""}`}
+                  onClick={() => setColor(c)}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="form-group">
             <label>Taglia</label>
             <div className="size-options">
-              {product.sizes.map((s) => (
+              {sizes.map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -64,13 +83,29 @@ export default function ProductDetail() {
 
           <div className="form-group">
             <label>Quantità</label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-            />
+            <div className="quantity-selector">
+              <button
+                type="button"
+                className="quantity-btn"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                aria-label="Diminuisci quantità"
+                disabled={quantity <= 1}
+              >
+                −
+              </button>
+              <span className="quantity-value" aria-live="polite">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                className="quantity-btn"
+                onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                aria-label="Aumenta quantità"
+                disabled={quantity >= 10}
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <button

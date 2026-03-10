@@ -431,9 +431,9 @@ main {
 
 .logo {
   font-family: var(--font-heading);
-  font-size: 1.30rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 1.50rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
   padding: 0.5rem 0;
   color: var(--color-text);
   transition: color var(--transition);
@@ -467,7 +467,7 @@ main {
   background: var(--color-accent-muted);
 }
 .header-cart-icon {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
 }
 .header-cart .cart-badge {
   position: absolute;
@@ -1227,6 +1227,47 @@ main {
   background: var(--color-bg);
   color: var(--color-text);
 }
+
+.quantity-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.quantity-btn {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: var(--transition);
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: var(--color-border);
+  color: var(--color-accent);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quantity-value {
+  min-width: 2.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
 .modal-info .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -1828,6 +1869,79 @@ main {
   border-color: var(--color-accent);
   background: var(--color-accent);
   color: var(--color-white);
+}
+
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.color-btn {
+  min-height: var(--touch-min);
+  padding: 0 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.color-btn--bianco {
+  background: #fafafa;
+  color: #333;
+  border-color: #ccc;
+}
+
+.color-btn--nero {
+  background: #1a1a1a;
+  color: #fafafa;
+  border-color: #444;
+}
+
+.color-btn:hover,
+.color-btn.active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.color-btn--bianco.active {
+  border-color: var(--color-accent);
+  background: #fff;
+  color: var(--color-accent);
+}
+
+.color-btn--nero.active {
+  border-color: var(--color-accent);
+  background: #0a0a0a;
+  color: var(--color-accent-soft);
+}
+
+.product-card-colors {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.product-card-colors-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.product-card-colors .color-options {
+  gap: 0.35rem;
+}
+
+.product-card-colors .color-btn {
+  min-height: 36px;
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
 }
 
 .product-detail-info .btn {
@@ -2437,12 +2551,14 @@ main {
   }
 }
 
-/* ========== DESKTOP: logo sinistra, nav destra (768px+) ========== */
+/* ========== DESKTOP: una riga logo | nav | azioni (768px+) ========== */
 @media (min-width: 768px) {
   .header-inner {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
     grid-template-columns: none;
     justify-items: stretch;
   }
@@ -2451,17 +2567,16 @@ main {
   .header-inner .header-cart {
     justify-self: auto;
   }
-  .header-actions {
-    display: none;
-  }
-  .header-cart {
-    display: none;
+  .header-inner .logo {
+    flex-shrink: 0;
+    margin-right: 0.5rem;
   }
   .nav-toggle,
   .nav-overlay {
     display: none;
   }
 
+  /* Nav in linea: logo | nav-list | accedi + carrello */
   .nav {
     position: static;
     width: auto;
@@ -2470,6 +2585,8 @@ main {
     left: auto;
     padding: 0;
     flex-direction: row;
+    flex: 1;
+    justify-content: center;
     gap: 1.5rem;
     background: transparent;
     box-shadow: none;
@@ -2485,12 +2602,15 @@ main {
   .nav-list {
     flex-direction: row;
     padding: 0;
-    gap: 0;
+    gap: 1.5rem;
     align-items: center;
+    justify-content: center;
   }
 
+  /* Su desktop nascondi Accedi e Carrello dal menu (ci sono le icone in header-actions) */
+  .nav-item-accedi,
   .nav-item-cart {
-    display: list-item;
+    display: none;
   }
 
   .nav-link {
@@ -2498,16 +2618,27 @@ main {
     min-height: auto;
     border-left: none;
     font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: color var(--transition);
   }
   .nav-link:hover,
   .nav-link:focus-visible,
   .nav-link:active {
     background: transparent;
     border-left: none;
+    color: var(--color-accent);
   }
 
   .nav-link-icon {
     display: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
   }
 
   .cart-link {
