@@ -6,7 +6,10 @@ import { ToastProvider } from "./context/ToastContext";
 import "./index.css";
 import App from "./App.jsx";
 
-const basename = import.meta.env.BASE_URL === './' ? '/abbigliamento' : (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+const basename =
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/abbigliamento')
+    ? '/abbigliamento'
+    : (import.meta.env.BASE_URL === './' ? '' : (import.meta.env.BASE_URL || '/').replace(/\/$/, ''));
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
