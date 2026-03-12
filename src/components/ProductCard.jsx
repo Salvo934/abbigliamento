@@ -5,6 +5,7 @@ import AddToCartModal from "./AddToCartModal";
 
 export default function ProductCard({ product }) {
   const [modalOpen, setModalOpen] = useState(false);
+  if (!product || typeof product.id === "undefined") return null;
 
   return (
     <>
@@ -16,7 +17,7 @@ export default function ProductCard({ product }) {
           <div className="product-card-body">
             <span className="product-category">{product.category}</span>
             <h3>{product.name}</h3>
-            <p className="product-price">€ {product.price.toFixed(2)}</p>
+            <p className="product-price">€ {Number(product.price ?? 0).toFixed(2)}</p>
           </div>
         </Link>
         <button

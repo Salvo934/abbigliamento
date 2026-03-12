@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../context/ProductsContext";
 import ProductCard from "../components/ProductCard";
 
 const PARTICLE_COUNT = 48;
@@ -10,6 +10,7 @@ const TYPE_SPEED = 90;
 const PAUSE_BETWEEN_LINES = 400;
 
 export default function Home() {
+  const { products, loading } = useProducts();
   const featured = products.slice(0, 4);
   const [line1, setLine1] = useState("");
   const [line2, setLine2] = useState("");
@@ -120,9 +121,13 @@ export default function Home() {
           </p>
         </div>
         <div className="product-grid product-grid-featured">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {loading ? (
+            <p className="featured-loading">Caricamento...</p>
+          ) : (
+            featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
         <div className="section-cta">
           <Link to="/shop" className="btn btn-primary btn-with-arrow">

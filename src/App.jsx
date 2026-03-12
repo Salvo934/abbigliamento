@@ -7,6 +7,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Contatti from "./pages/Contatti";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="checkout" element={<Checkout />} />
         <Route path="contatti" element={<Contatti />} />
         <Route path="login" element={<Login />} />
+        <Route path="registrati" element={<Register />} />
       </Route>
     </Routes>
   );

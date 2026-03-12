@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProductById } from "../data/products";
+import { useProducts } from "../context/ProductsContext";
 import { getPublicUrl } from "../utils/publicUrl";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
@@ -8,6 +8,7 @@ import { useToast } from "../context/ToastContext";
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { getProductById, loading } = useProducts();
   const product = getProductById(id);
   const { addToCart } = useCart();
   const { showToast } = useToast();
@@ -18,6 +19,13 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  if (loading) {
+    return (
+      <div className="page">
+        <p>Caricamento...</p>
+      </div>
+    );
+  }
   if (!product) {
     return (
       <div className="page">

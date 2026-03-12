@@ -1,12 +1,16 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import CartDrawer from "./CartDrawer";
 
 export default function Header() {
   const { cartCount } = useCart();
+  const { user, signOut, isLoggedIn } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef(null);
 
   useEffect(() => {
     if (menuOpen) {
@@ -29,6 +33,24 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [cartDrawerOpen]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) return;
+    const closeOnClickOutside = (e) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    const closeOnEscape = (e) => {
+      if (e.key === "Escape") setAccountMenuOpen(false);
+    };
+    document.addEventListener("click", closeOnClickOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("click", closeOnClickOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [accountMenuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
   const toggleCartDrawer = () => setCartDrawerOpen((o) => !o);
@@ -70,28 +92,35 @@ export default function Header() {
           </div>
           <ul className="nav-list">
             <li>
-              <Link to="/" onClick={closeMenu} className="nav-link">
+              <NavLink to="/" onClick={closeMenu} className="nav-link" end>
                 <span className="nav-link-icon" aria-hidden>🏠</span>
                 Home
-              </Link>
+              </NavLink>
             </li>
             <li>
-              <Link to="/shop" onClick={closeMenu} className="nav-link">
+              <NavLink to="/shop" onClick={closeMenu} className="nav-link">
                 <span className="nav-link-icon" aria-hidden>🛍️</span>
                 Shop
-              </Link>
+              </NavLink>
             </li>
             <li>
-              <Link to="/contatti" onClick={closeMenu} className="nav-link">
+              <NavLink to="/contatti" onClick={closeMenu} className="nav-link">
                 <span className="nav-link-icon" aria-hidden>✉️</span>
                 Contatti
-              </Link>
+              </NavLink>
             </li>
           <li className="nav-item-accedi">
-            <Link to="/login" onClick={closeMenu} className="nav-link">
-              <span className="nav-link-icon" aria-hidden>👤</span>
-              Accedi
-            </Link>
+            {isLoggedIn ? (
+              <button type="button" onClick={() => { signOut(); closeMenu(); }} className="nav-link nav-link-logout">
+                <span className="nav-link-icon" aria-hidden>👤</span>
+                Esci
+              </button>
+            ) : (
+              <Link to="/login" onClick={closeMenu} className="nav-link">
+                <span className="nav-link-icon" aria-hidden>👤</span>
+                Accedi
+              </Link>
+            )}
           </li>
           <li className="nav-item-cart">
               <Link to="/carrello" onClick={closeMenu} className="nav-link cart-link">
@@ -105,12 +134,50 @@ export default function Header() {
           </ul>
         </nav>
         <div className="header-actions">
-          <Link to="/login" className="header-accedi" aria-label="Accedi">
-            <svg className="header-accedi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <circle cx="12" cy="8" r="3.5" />
-              <path d="M5 20a7 7 0 0 1 14 0" />
-            </svg>
-          </Link>
+          {isLoggedIn ? (
+            <div className="header-account-wrap" ref={accountMenuRef}>
+              <button
+                type="button"
+                onClick={() => setAccountMenuOpen((o) => !o)}
+                className={`header-account header-account--logged ${accountMenuOpen ? "is-open" : ""}`}
+                aria-label="Menu account"
+                aria-expanded={accountMenuOpen}
+                aria-haspopup="true"
+                title={user?.email ?? "Account"}
+              >
+                <span className="header-account-initial" aria-hidden>
+                  {user?.email?.charAt(0)?.toUpperCase() || "U"}
+                </span>
+              </button>
+              <div className={`header-account-dropdown ${accountMenuOpen ? "is-open" : ""}`} role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="header-account-dropdown-item header-account-dropdown-logout"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    signOut();
+                  }}
+                >
+                  <span className="header-account-dropdown-icon" aria-hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                  </span>
+                  Esci
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link to="/login" className="header-account" aria-label="Accedi" title="Accedi">
+              <svg className="header-account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5 20a7 7 0 0 1 14 0" />
+              </svg>
+            </Link>
+          )}
           <button
             type="button"
             className="header-cart"

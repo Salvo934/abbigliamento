@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { products, categories } from "../data/products";
+import { useProducts } from "../context/ProductsContext";
 import ProductCard from "../components/ProductCard";
 
 export default function Shop() {
+  const { products, categories, loading } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState("tutti");
 
   const filtered =
@@ -18,9 +19,12 @@ export default function Shop() {
           <p className="shop-header-subtitle">Tutta la nostra collezione</p>
         </div>
         <p className="shop-header-count" aria-live="polite">
-          {filtered.length} {filtered.length === 1 ? "prodotto" : "prodotti"}
+          {loading ? "..." : `${filtered.length} ${filtered.length === 1 ? "prodotto" : "prodotti"}`}
         </p>
       </header>
+      {loading ? (
+        <div className="page-inner" style={{ padding: "2rem", textAlign: "center" }}>Caricamento prodotti...</div>
+      ) : (
       <div className="shop-layout">
         <aside className="filters" aria-label="Filtra per categoria">
           <h3 className="filters-title">Categorie</h3>
@@ -58,6 +62,7 @@ export default function Shop() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

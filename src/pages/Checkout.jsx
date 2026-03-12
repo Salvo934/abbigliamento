@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { saveOrder } from "../services/ordersService";
 
 const STEPS = [
   { id: "spedizione", label: "Spedizione", icon: "📍" },
@@ -8,15 +11,14 @@ const STEPS = [
   { id: "conferma", label: "Conferma", icon: "✓" },
 ];
 
-function generateOrderId() {
-  return "ORD-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-}
-
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [orderId, setOrderId] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
     nome: "",
@@ -29,6 +31,15 @@ export default function Checkout() {
     note: "",
   });
   const [payment, setPayment] = useState("carta");
+  const [lastOrderSummary, setLastOrderSummary] = useState(null);
+  const prefilledRef = useRef(false);
+
+  useEffect(() => {
+    if (user?.email && !prefilledRef.current) {
+      prefilledRef.current = true;
+      setForm((prev) => ({ ...prev, email: user.email }));
+    }
+  }, [user?.email]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,15 +71,54 @@ export default function Checkout() {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (step === 1 && !validateStep1()) return;
     if (step < 3) {
       setStep(step + 1);
       return;
     }
-    setOrderId(generateOrderId());
-    clearCart();
+    setSaving(true);
+    try {
+      const orderPayload = {
+        items: cart.map(({ id, name, price, quantity, size, color }) => ({
+          productId: id,
+          name,
+          price,
+          quantity,
+          size,
+          color: color || null,
+        })),
+        total: cartTotal,
+        shipping: {
+          nome: form.nome,
+          cognome: form.cognome,
+          email: form.email,
+          telefono: form.telefono,
+          indirizzo: form.indirizzo,
+          citta: form.citta,
+          cap: form.cap,
+          note: form.note || null,
+        },
+        paymentMethod: payment,
+        userId: user?.uid ?? null,
+        userEmail: form.email,
+      };
+      const id = await saveOrder(orderPayload);
+      setLastOrderSummary({
+        items: cart.map((i) => ({ ...i })),
+        total: cartTotal,
+        shipping: { ...form },
+        payment,
+      });
+      setOrderId(id);
+      clearCart();
+    } catch (err) {
+      console.error(err);
+      showToast("Errore nel salvataggio dell'ordine. Riprova.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (cart.length === 0 && !orderId) {
@@ -90,8 +140,31 @@ export default function Checkout() {
         <div className="checkout-success">
           <div className="checkout-success-icon">✓</div>
           <h1>Ordine confermato!</h1>
-          <p className="checkout-success-id">Numero ordine: <strong>{orderId}</strong></p>
-          <p>Ti abbiamo inviato una conferma all'indirizzo <strong>{form.email}</strong>. La spedizione avverrà entro 3-5 giorni lavorativi.</p>
+          <p className="checkout-success-id">Numero ordine: <strong>ORD-{orderId}</strong></p>
+          <p>La spedizione avverrà entro 3-5 giorni lavorativi.</p>
+
+          {lastOrderSummary && (
+            <div className="checkout-success-recap">
+              <h3 className="checkout-success-recap-title">Riepilogo ordine</h3>
+              <ul className="checkout-success-recap-list">
+                {lastOrderSummary.items.map((item) => (
+                  <li key={`${item.id}-${item.size}-${item.color ?? ""}`}>
+                    <span>{item.name} <em>({item.size}{item.color ? `, ${item.color}` : ""})</em> × {item.quantity}</span>
+                    <span>€ {(item.price * item.quantity).toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="checkout-success-recap-total">
+                <span>Totale</span>
+                <strong>€ {lastOrderSummary.total.toFixed(2)}</strong>
+              </div>
+              <div className="checkout-success-recap-address">
+                <strong>Spedizione a</strong>
+                <p>{lastOrderSummary.shipping.nome} {lastOrderSummary.shipping.cognome}, {lastOrderSummary.shipping.indirizzo}, {lastOrderSummary.shipping.cap} {lastOrderSummary.shipping.citta}</p>
+              </div>
+            </div>
+          )}
+
           <div className="checkout-success-actions">
             <button className="btn btn-primary" onClick={() => navigate("/shop")}>
               Continua lo shopping
@@ -120,8 +193,15 @@ export default function Checkout() {
         </div>
       </div>
 
-      <form className="checkout-form-wrapper" onSubmit={handleSubmit}>
-        <div className="checkout-layout">
+      <form
+        className="checkout-form-wrapper"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (step === 3) return;
+          handleSubmit(e);
+        }}
+      >
+        <div className={`checkout-layout ${step === 3 ? "checkout-layout--no-sidebar" : ""}`}>
           <div className="checkout-main">
             {step === 1 && (
               <div className="checkout-block animate-in">
@@ -260,19 +340,44 @@ export default function Checkout() {
 
             {step === 3 && (
               <div className="checkout-block animate-in">
-                <h2>Riepilogo ordine</h2>
-                <div className="checkout-recap">
-                  <div className="checkout-recap-address">
-                    <strong>Spedizione a</strong>
-                    <p>{form.nome} {form.cognome}<br />
-                    {form.indirizzo}<br />
-                    {form.cap} {form.citta}</p>
-                    <p>{form.email} · {form.telefono}</p>
-                  </div>
-                  <div className="checkout-recap-payment">
-                    <strong>Pagamento</strong>
-                    <p>{payment === "carta" ? "Carta di credito/debito" : payment === "paypal" ? "PayPal" : "Bonifico bancario"}</p>
-                  </div>
+                <h2>Riepilogo</h2>
+                <p className="checkout-recap-intro">Controlla i dati e clicca su Ordina per confermare.</p>
+
+                <div className="checkout-recap checkout-recap--full">
+                  <section className="checkout-recap-section">
+                    <h3 className="checkout-recap-title">Spedizione</h3>
+                    <div className="checkout-recap-address">
+                      <p className="checkout-recap-line">{form.nome} {form.cognome}</p>
+                      <p className="checkout-recap-line">{form.indirizzo}</p>
+                      <p className="checkout-recap-line">{form.cap} {form.citta}</p>
+                      <p className="checkout-recap-line">{form.email}</p>
+                      <p className="checkout-recap-line">{form.telefono}</p>
+                      {form.note?.trim() && <p className="checkout-recap-line checkout-recap-note">Note: {form.note}</p>}
+                    </div>
+                  </section>
+
+                  <section className="checkout-recap-section">
+                    <h3 className="checkout-recap-title">Pagamento</h3>
+                    <p className="checkout-recap-payment">
+                      {payment === "carta" ? "Carta di credito / debito" : payment === "paypal" ? "PayPal" : "Bonifico bancario"}
+                    </p>
+                  </section>
+
+                  <section className="checkout-recap-section checkout-recap-products">
+                    <h3 className="checkout-recap-title">Il tuo ordine</h3>
+                    <ul className="checkout-recap-list">
+                      {cart.map((item) => (
+                        <li key={`${item.id}-${item.size}-${item.color ?? ""}`} className="checkout-recap-item">
+                          <span className="checkout-recap-item-name">{item.name} <em>({item.size}{item.color ? `, ${item.color}` : ""})</em> × {item.quantity}</span>
+                          <span className="checkout-recap-item-price">€ {(item.price * item.quantity).toFixed(2)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="checkout-recap-total">
+                      <span>Totale</span>
+                      <strong>€ {cartTotal.toFixed(2)}</strong>
+                    </div>
+                  </section>
                 </div>
               </div>
             )}
@@ -290,28 +395,38 @@ export default function Checkout() {
                   Continua
                 </button>
               ) : (
-                <button type="submit" className="btn btn-primary btn-confirm">
-                  Completa ordine — € {cartTotal.toFixed(2)}
+                <button
+                  type="button"
+                  className="btn btn-primary btn-confirm"
+                  disabled={saving}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }}
+                >
+                  {saving ? "Salvataggio..." : "Ordina"}
                 </button>
               )}
             </div>
           </div>
 
-          <aside className="checkout-summary">
-            <h3>Il tuo ordine</h3>
-            <ul className="checkout-summary-list">
-              {cart.map((item) => (
-                <li key={`${item.id}-${item.size}`}>
-                  <span className="checkout-summary-name">{item.name} <em>({item.size})</em> × {item.quantity}</span>
-                  <span className="checkout-summary-price">€ {(item.price * item.quantity).toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="checkout-summary-total">
-              <span>Totale</span>
-              <strong>€ {cartTotal.toFixed(2)}</strong>
-            </div>
-          </aside>
+          {step !== 3 && (
+            <aside className="checkout-summary">
+              <h3>Il tuo ordine</h3>
+              <ul className="checkout-summary-list">
+                {cart.map((item) => (
+                  <li key={`${item.id}-${item.size}`}>
+                    <span className="checkout-summary-name">{item.name} <em>({item.size})</em> × {item.quantity}</span>
+                    <span className="checkout-summary-price">€ {(item.price * item.quantity).toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="checkout-summary-total">
+                <span>Totale</span>
+                <strong>€ {cartTotal.toFixed(2)}</strong>
+              </div>
+            </aside>
+          )}
         </div>
       </form>
     </div>
