@@ -43,9 +43,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (email, password) =>
-    auth ? signInWithEmailAndPassword(auth, email, password) : Promise.reject(new Error("Auth non disponibile"));
+    auth ? signInWithEmailAndPassword(auth, email, password) : Promise.reject(new Error("Auth non disponibile per questo dominio."));
   const register = async (email, password, profile = {}) => {
-    if (!auth) return Promise.reject(new Error("Auth non disponibile"));
+    if (!auth) return Promise.reject(new Error("Auth non disponibile per questo dominio."));
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     try {
       await saveUserProfile(userCredential.user.uid, { ...profile, email: profile.email || email });
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
   };
   const signOut = () => (auth ? firebaseSignOut(auth) : Promise.resolve());
   const resetPassword = (email) =>
-    auth ? sendPasswordResetEmail(auth, email) : Promise.reject(new Error("Auth non disponibile"));
+    auth ? sendPasswordResetEmail(auth, email) : Promise.reject(new Error("Auth non disponibile per questo dominio."));
 
   return (
     <AuthContext.Provider

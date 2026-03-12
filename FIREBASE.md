@@ -21,14 +21,35 @@ In `.env` imposta:
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 
-## 3. Domini autorizzati (desktop, mobile e produzione)
+## 3. Deploy su Vercel (abbigliamento.vercel.app)
 
-Firebase usa la **stessa configurazione** per desktop, mobile e produzione. Per far funzionare Auth e Firestore ovunque:
+Per evitare **"Auth non disponibile per questo dominio"** su https://abbigliamento.vercel.app:
 
-- Vai in **Authentication** → **Settings** → **Authorized domains**.
-- Aggiungi **tutti** i domini da cui apri l’app:
-  - `localhost` – per sviluppo su desktop (`npm run dev`)
-  - **`abbigliamento.vercel.app`** – dominio di produzione (Vercel); necessario per login/registrazione quando il sito è aperto da [https://abbigliamento.vercel.app](https://abbigliamento.vercel.app) (anche da mobile).
+### A) Variabili d’ambiente su Vercel
+
+Le variabili del file `.env` **non** vengono caricate automaticamente su Vercel. Vanno impostate a mano:
+
+1. Vercel → tuo progetto **abbigliamento** → **Settings** → **Environment Variables**.
+2. Aggiungi **ogni** variabile (nome = chiave, valore = quello del tuo `.env`):
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - (opzionale) `VITE_FIREBASE_MEASUREMENT_ID`
+3. Applica a **Production** (e se serve a Preview).
+4. **Redeploy** il progetto (Deployments → ⋮ su un deploy → Redeploy), altrimenti il build non vede le nuove variabili.
+
+### B) Dominio autorizzato in Firebase
+
+1. [Firebase Console](https://console.firebase.google.com) → tuo progetto → **Authentication** → **Settings** → **Authorized domains**.
+2. **Add domain** → inserisci: **`abbigliamento.vercel.app`** (senza `https://`).
+3. Salva.
+
+Solo dopo **entrambi** i passaggi (variabili su Vercel + dominio in Firebase) Auth e Firestore funzionano su abbigliamento.vercel.app.
+
+Per lo sviluppo in locale (`npm run dev`), in Authorized domains deve esserci anche **`localhost`**.
 
 ## 4. Authentication
 
