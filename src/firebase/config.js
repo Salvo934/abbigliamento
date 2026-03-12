@@ -36,7 +36,7 @@ try {
     db = initializeFirestore(app, { experimentalForceLongPolling: true });
   } catch (e) {
     if (typeof window !== "undefined") {
-      console.warn("[Firebase] Long polling non disponibile, uso predefinito:", e?.message);
+      console.warn("[Firebase] Firestore init fallback:", e?.message);
     }
     db = getFirestore(app);
   }

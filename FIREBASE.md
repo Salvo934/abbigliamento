@@ -21,16 +21,14 @@ In `.env` imposta:
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 
-## 3. Domini autorizzati (importante per desktop / localhost)
+## 3. Domini autorizzati (desktop, mobile e produzione)
 
-Per far funzionare Firebase anche su **desktop** e in sviluppo locale:
+Firebase usa la **stessa configurazione** per desktop, mobile e produzione. Per far funzionare Auth e Firestore ovunque:
 
 - Vai in **Authentication** → **Settings** → **Authorized domains**.
-- Assicurati che ci siano:
-  - `localhost` (per `npm run dev` su desktop)
-  - Il dominio di produzione (es. `tuosito.web.app`).
-
-Senza `localhost` in autorizzati, Auth e a volte le chiamate Firestore possono fallire su desktop.
+- Aggiungi **tutti** i domini da cui apri l’app:
+  - `localhost` – per sviluppo su desktop (`npm run dev`)
+  - **`abbigliamento.vercel.app`** – dominio di produzione (Vercel); necessario per login/registrazione quando il sito è aperto da [https://abbigliamento.vercel.app](https://abbigliamento.vercel.app) (anche da mobile).
 
 ## 4. Authentication
 
