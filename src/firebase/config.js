@@ -22,8 +22,12 @@ try {
   const hasConfig = firebaseConfig.apiKey && firebaseConfig.projectId;
   if (!hasConfig) {
     if (typeof window !== "undefined") {
+      const isProduction = !/localhost|127\.0\.0\.1/.test(window.location?.hostname || "");
       console.warn(
-        "[Firebase] Variabili mancanti (.env). Uso dati locali. Aggiungi localhost in Authentication → Authorized domains per desktop."
+        "[Firebase] Variabili mancanti.",
+        isProduction
+          ? "Su Vercel: Settings → Environment Variables → aggiungi VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, ecc. Poi Redeploy. Aggiungi anche il dominio in Firebase → Authentication → Authorized domains."
+          : "In locale: copia .env.example in .env e compila. Aggiungi localhost in Firebase → Authentication → Authorized domains."
       );
     }
     throw new Error("Firebase config mancante");

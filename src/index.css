@@ -336,6 +336,44 @@ main {
     0 24px 56px rgba(0, 0, 0, 0.4);
 }
 
+.auth-unavailable {
+  background: rgba(220, 120, 50, 0.12);
+  border: 1px solid rgba(220, 120, 50, 0.4);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.auth-unavailable strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.auth-unavailable p {
+  margin: 0.5rem 0;
+  color: var(--color-text-muted);
+}
+
+.auth-unavailable ol {
+  margin: 0.5rem 0 0 1.25rem;
+  padding: 0;
+  color: var(--color-text-muted);
+}
+
+.auth-unavailable li {
+  margin-bottom: 0.35rem;
+}
+
+.auth-unavailable code {
+  font-size: 0.85em;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
 .auth-form-group {
   margin-bottom: 1.25rem;
 }

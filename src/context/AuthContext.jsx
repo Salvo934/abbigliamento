@@ -67,6 +67,7 @@ export function AuthProvider({ children }) {
         signOut,
         resetPassword,
         isLoggedIn: !!user,
+        authAvailable: !!auth,
       }}
     >
       {children}
