@@ -5,7 +5,8 @@ const ORDERS_COLLECTION = "orders";
 
 /**
  * Salva un ordine su Firestore.
- * @param {Object} order - { items, total, shipping, paymentMethod, userId?, userEmail? }
+ * @param {Object} order - { items, total, shipping, paymentMethod, userId?, userEmail?, status? }
+ * @param {string} [order.status] - 'pending' (pagamento Stripe in attesa), 'completed' (pagato/altro)
  * @returns {Promise<string>} ID ordine
  */
 export async function saveOrder(order) {

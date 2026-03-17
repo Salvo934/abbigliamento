@@ -51,6 +51,8 @@ Solo dopo **entrambi** i passaggi (variabili su Vercel + dominio in Firebase) Au
 
 Per lo sviluppo in locale (`npm run dev`), in Authorized domains deve esserci anche **`localhost`**.
 
+Se non funziona: verifica che i nomi delle variabili su Vercel siano esatti (con prefisso `VITE_`), che siano per **Production**, che tu abbia fatto **Redeploy** dopo averle aggiunte, e che in Firebase Authorized domains ci sia il dominio esatto (senza `https://`).
+
 ## 4. Authentication
 
 Nella console Firebase: **Authentication** → **Sign-in method** → abilita **Email/Password**.

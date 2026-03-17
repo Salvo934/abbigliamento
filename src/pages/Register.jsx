@@ -5,7 +5,7 @@ import { useToast } from "../context/ToastContext";
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, authAvailable } = useAuth();
+  const { register } = useAuth();
   const { showToast } = useToast();
   const [nome, setNome] = useState("");
   const [cognome, setCognome] = useState("");
@@ -83,16 +83,6 @@ export default function Register() {
         </header>
 
         <div className="auth-card">
-          {!authAvailable && (
-            <div className="auth-unavailable" role="alert">
-              <strong>Registrazione non disponibile su questo dominio.</strong>
-              <p>Per abilitare la registrazione:</p>
-              <ol>
-                <li>Vercel → Settings → Environment Variables: aggiungi tutte le variabili <code>VITE_FIREBASE_*</code>, poi <strong>Redeploy</strong>.</li>
-                <li>Firebase Console → Authentication → Authorized domains: aggiungi <code>{typeof window !== "undefined" ? window.location.hostname : "questo dominio"}</code>.</li>
-              </ol>
-            </div>
-          )}
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="auth-form-group">
               <label htmlFor="nome">Nome</label>
@@ -169,7 +159,7 @@ export default function Register() {
                 autoComplete="new-password"
               />
             </div>
-            <button type="submit" className="auth-submit" disabled={loading || !authAvailable}>
+            <button type="submit" className="auth-submit" disabled={loading}>
               {loading ? "Registrazione in corso..." : "Crea account"}
             </button>
           </form>
