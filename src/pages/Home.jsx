@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductsContext";
 import ProductCard from "../components/ProductCard";
+import LoaderInline from "../components/LoaderInline";
 
 const PARTICLE_COUNT = 48;
 const LINE_1 = "Find";
@@ -122,7 +123,7 @@ export default function Home() {
         </div>
         <div className="product-grid product-grid-featured">
           {loading ? (
-            <p className="featured-loading">Caricamento...</p>
+            <LoaderInline type="skeleton-cards" count={4} gridParent />
           ) : (
             featured.map((product) => (
               <ProductCard key={product.id} product={product} />

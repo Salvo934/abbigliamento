@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { saveOrder } from "../services/ordersService";
+import { saveOrder, updateOrderStatus } from "../services/ordersService";
+import { createPaymentIntent, confirmOrder } from "../services/stripeService";
+import CheckoutCardForm from "../components/CheckoutCardForm";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
 const STEPS = [
   { id: "spedizione", label: "Spedizione", icon: "📍" },
@@ -29,10 +35,12 @@ export default function Checkout() {
     citta: "",
     cap: "",
     note: "",
+    cardHolder: "",
   });
   const [payment, setPayment] = useState("carta");
   const [lastOrderSummary, setLastOrderSummary] = useState(null);
   const prefilledRef = useRef(false);
+  const cardFormRef = useRef(null);
 
   useEffect(() => {
     if (user?.email && !prefilledRef.current) {
@@ -64,6 +72,10 @@ export default function Checkout() {
 
   const handleNext = () => {
     if (step === 1 && !validateStep1()) return;
+    if (step === 1 || step === 2) {
+      const fullName = `${(form.nome || "").trim()} ${(form.cognome || "").trim()}`.trim();
+      setForm((prev) => ({ ...prev, cardHolder: prev.cardHolder || fullName }));
+    }
     if (step < 3) setStep(step + 1);
   };
 
@@ -104,6 +116,24 @@ export default function Checkout() {
         userId: user?.uid ?? null,
         userEmail: form.email,
       };
+
+      if (payment === "carta") {
+        orderPayload.status = "pending";
+        const id = await saveOrder(orderPayload);
+        const { clientSecret } = await createPaymentIntent({ orderId: id, amount: cartTotal });
+        const { paymentIntentId } = await cardFormRef.current.confirmPayment(clientSecret);
+        await confirmOrder({ paymentIntentId });
+        await updateOrderStatus(id, { status: "completed" });
+        setLastOrderSummary({
+          items: cart.map((i) => ({ ...i })),
+          total: cartTotal,
+          shipping: { ...form },
+          payment: "carta",
+        });
+        setOrderId(id);
+        clearCart();
+        return;
+      }
 
       const id = await saveOrder(orderPayload);
       setLastOrderSummary({
@@ -315,6 +345,7 @@ export default function Checkout() {
             {step === 2 && (
               <div className="checkout-block animate-in">
                 <h2>Metodo di pagamento</h2>
+                <p className="checkout-recap-intro">Scegli come vuoi pagare. Se scegli la carta, inserirai i dati nel riepilogo prima di confermare.</p>
                 <div className="payment-options">
                   <label className="payment-option">
                     <input
@@ -335,7 +366,7 @@ export default function Checkout() {
                     <span className="payment-option-label">Bonifico bancario</span>
                   </label>
                 </div>
-                <p className="checkout-note">Il pagamento sarà elaborato in modo sicuro. Non memorizziamo i dati della carta.</p>
+                <p className="checkout-note">Il pagamento è sicuro. Non memorizziamo i dati della carta.</p>
               </div>
             )}
 
@@ -357,11 +388,39 @@ export default function Checkout() {
                     </div>
                   </section>
 
-                  <section className="checkout-recap-section">
+                  <section className={`checkout-recap-section ${payment === "carta" ? "checkout-recap-section--payment-card" : ""}`}>
                     <h3 className="checkout-recap-title">Pagamento</h3>
                     <p className="checkout-recap-payment">
                       {payment === "carta" ? "Carta di credito / debito" : payment === "paypal" ? "PayPal" : "Bonifico bancario"}
                     </p>
+                    {payment === "carta" && (
+                      <div className="checkout-payment-card-block">
+                        <p className="checkout-payment-card-intro">
+                          Inserisci i dati della carta per completare l’ordine in modo sicuro.
+                        </p>
+                        <div className="form-group checkout-recap-card-holder">
+                          <label htmlFor="cardHolder-recap">Intestatario della carta *</label>
+                          <input
+                            id="cardHolder-recap"
+                            type="text"
+                            value={form.cardHolder || ""}
+                            onChange={(e) => setForm((prev) => ({ ...prev, cardHolder: e.target.value }))}
+                            placeholder="Nome e cognome come riportati sulla carta"
+                            className="checkout-recap-input"
+                            autoComplete="cc-name"
+                          />
+                        </div>
+                        {stripePromise && (
+                          <Elements stripe={stripePromise}>
+                            <CheckoutCardForm ref={cardFormRef} />
+                          </Elements>
+                        )}
+                        <p className="checkout-payment-card-secure" aria-hidden="true">
+                          <span className="checkout-payment-card-secure-icon" aria-hidden>🔒</span>
+                          Pagamento protetto. I dati della carta non transitano dai nostri server.
+                        </p>
+                      </div>
+                    )}
                   </section>
 
                   <section className="checkout-recap-section checkout-recap-products">

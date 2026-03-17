@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useProducts } from "../context/ProductsContext";
 import ProductCard from "../components/ProductCard";
+import LoaderInline from "../components/LoaderInline";
 
 export default function Shop() {
   const { products, categories, loading } = useProducts();
@@ -23,7 +24,9 @@ export default function Shop() {
         </p>
       </header>
       {loading ? (
-        <div className="page-inner" style={{ padding: "2rem", textAlign: "center" }}>Caricamento prodotti...</div>
+        <div className="page-inner shop-loader-wrap">
+          <LoaderInline type="skeleton-cards" count={8} />
+        </div>
       ) : (
       <div className="shop-layout">
         <aside className="filters" aria-label="Filtra per categoria">

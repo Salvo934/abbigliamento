@@ -4,6 +4,7 @@ import { useProducts } from "../context/ProductsContext";
 import { getPublicUrl } from "../utils/publicUrl";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
+import LoaderInline from "../components/LoaderInline";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <div className="page">
-        <p>Caricamento...</p>
+        <LoaderInline type="skeleton-detail" />
       </div>
     );
   }

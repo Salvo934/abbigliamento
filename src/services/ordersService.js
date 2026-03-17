@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 const ORDERS_COLLECTION = "orders";
@@ -6,7 +6,7 @@ const ORDERS_COLLECTION = "orders";
 /**
  * Salva un ordine su Firestore.
  * @param {Object} order - { items, total, shipping, paymentMethod, userId?, userEmail?, status? }
- * @param {string} [order.status] - 'pending' (in attesa), 'completed' (completato)
+ * @param {string} [order.status] - 'pending' (pagamento in attesa), 'completed' (pagato)
  * @returns {Promise<string>} ID ordine
  */
 export async function saveOrder(order) {
@@ -18,6 +18,17 @@ export async function saveOrder(order) {
     createdAt: serverTimestamp(),
   });
   return docRef.id;
+}
+
+/**
+ * Aggiorna lo stato di un ordine (es. dopo pagamento con carta).
+ */
+export async function updateOrderStatus(orderId, updates) {
+  if (!db) return Promise.reject(new Error("Firestore non disponibile."));
+  await updateDoc(doc(db, ORDERS_COLLECTION, orderId), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 /**
