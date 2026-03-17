@@ -4,8 +4,6 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { saveOrder } from "../services/ordersService";
-import { createCheckoutSession } from "../services/stripeService";
-import { getPublicUrl } from "../utils/publicUrl";
 
 const STEPS = [
   { id: "spedizione", label: "Spedizione", icon: "📍" },
@@ -106,32 +104,6 @@ export default function Checkout() {
         userId: user?.uid ?? null,
         userEmail: form.email,
       };
-
-      if (payment === "carta") {
-        orderPayload.status = "pending";
-        const id = await saveOrder(orderPayload);
-        const origin = window.location.origin;
-        const successUrl = `${origin}${import.meta.env.BASE_URL || "/"}checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-        const cancelUrl = `${origin}${import.meta.env.BASE_URL || "/"}checkout`;
-        const itemsForStripe = cart.map((item) => ({
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          size: item.size,
-          color: item.color || undefined,
-          image: item.image ? `${origin}${getPublicUrl(item.image)}` : undefined,
-        }));
-        const { url } = await createCheckoutSession({
-          orderId: id,
-          amount: cartTotal,
-          items: itemsForStripe,
-          customer_email: form.email,
-          success_url: successUrl,
-          cancel_url: cancelUrl,
-        });
-        window.location.href = url;
-        return;
-      }
 
       const id = await saveOrder(orderPayload);
       setLastOrderSummary({

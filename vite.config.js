@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   base: process.env.NODE_ENV === 'production' ? './' : '/',
   server: {
-    port: 5174,
-    strictPort: true,
+    port: 3000,
+    strictPort: false,
     open: true,
   },
 })

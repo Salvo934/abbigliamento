@@ -26,30 +26,27 @@ try {
       console.warn(
         "[Firebase] Variabili mancanti.",
         isProduction
-          ? "Su Vercel: Settings → Environment Variables → aggiungi VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, ecc. Poi Redeploy. Aggiungi anche il dominio in Firebase → Authentication → Authorized domains."
-          : "In locale: copia .env.example in .env e compila. Aggiungi localhost in Firebase → Authentication → Authorized domains."
+          ? "Su Vercel: Settings → Environment Variables → aggiungi VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, ecc."
+          : "In locale: copia .env.example in .env e compila le variabili Firebase."
       );
     }
-    throw new Error("Firebase config mancante");
-  }
-
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-
-  try {
-    db = initializeFirestore(app, { experimentalForceLongPolling: true });
-  } catch (e) {
-    if (typeof window !== "undefined") {
-      console.warn("[Firebase] Firestore init fallback:", e?.message);
-    }
-    db = getFirestore(app);
-  }
-
-  if (typeof window !== "undefined" && firebaseConfig.measurementId) {
+  } else {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
     try {
-      analytics = getAnalytics(app);
-    } catch (_) {
-      analytics = null;
+      db = initializeFirestore(app, { experimentalForceLongPolling: true });
+    } catch (e) {
+      if (typeof window !== "undefined") {
+        console.warn("[Firebase] Firestore init fallback:", e?.message);
+      }
+      db = getFirestore(app);
+    }
+    if (typeof window !== "undefined" && firebaseConfig.measurementId) {
+      try {
+        analytics = getAnalytics(app);
+      } catch (_) {
+        analytics = null;
+      }
     }
   }
 } catch (e) {
